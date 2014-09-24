@@ -2,7 +2,7 @@
   "name": "worldwide-bpm",
   "version": "1.0.0",
   "description": "visualize worldwide bpm",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/pubnub/pubnub-twitter-spotify-worldwide-bpm.git'/issues"
   },
-  "homepage": "https://github.com/pubnub/pubnub-twitter-spotify-worldwide-bpm.git'"
+  "homepage": "https://github.com/pubnub/pubnub-twitter-spotify-worldwide-bpm.git'",
+  "dependencies": {
+    "pubnub": "~3.6.7"
+  }
 }
