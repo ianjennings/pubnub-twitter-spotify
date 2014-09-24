@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/pubnub/pubnub-twitter-spotify-worldwide-bpm.git'",
   "dependencies": {
-    "pubnub": "~3.6.7"
+    "pubnub": "~3.6.7",
+    "dotenv": "~0.4.0"
   }
 }
