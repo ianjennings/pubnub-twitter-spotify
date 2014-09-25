@@ -1,6 +1,11 @@
 var PUBNUB = require('pubnub');
 var mongo = require('mongodb').MongoClient;
 
+var express = require('express');
+var app = express();
+app.set('views', './views');
+app.set('view engine', 'jade');
+
 // http://stackoverflow.com/questions/4504853/how-do-i-extract-a-url-from-plain-text-using-jquery
 var findUrls = function(text) {
     
@@ -31,18 +36,16 @@ mongo.connect('mongodb://127.0.0.1:27017/pubnub-listening', function(err, db) {
     subscribe_key: 'sub-c-78806dd4-42a6-11e4-aed8-02ee2ddab7fe'
   });
 
-  var top10 = function() {
+  var top = function(callback) {
+
+    var callback = callback || function(){};
 
     albums
       .find({})
       .sort({plays: -1})
-      .limit(10)
+      .limit(5)
       .toArray(function(err, docs) {
-
-        for(var i = 0; i < docs.length; i++) {
-          console.log(i + ') [' + docs[i].plays + ' plays] ' + docs[i].link);
-        }
-
+        callback(docs);
     });
 
   };
@@ -56,23 +59,31 @@ mongo.connect('mongodb://127.0.0.1:27017/pubnub-listening', function(err, db) {
 
       if(typeof link !== "undefined" && link) {
 
-        var dbobj = {
-          link: link,
-          plays: 1,
-          tweet: tweet
-        };
-
-        albums.update({link: link}, {$inc: {plays: 1}}, {upsert: true, w: 1}, function(err, docs) {
+        albums.update({link: link, tweet: tweet}, {$inc: {plays: 1}}, {upsert: true, w: 1}, function(err, docs) {
           console.log(' ');
           console.log('--------------------------------------------------');
           console.log(' ');
-          console.log('Update: '.green + link);
-          top10();
+          console.log('Update: ' + link);
+          top(function(docs) {
+
+            for(var i = 0; i < docs.length; i++) {
+              console.log(i + ') [' + docs[i].plays + ' plays] ' + docs[i].link);
+            }
+
+          });
         });
 
       }
 
     }
   });
+
+  app.get('/', function (req, res) {
+    top(function(docs) {
+      res.render('index', {docs: docs});
+    });
+  });
+
+  app.listen(3000);
 
 });
