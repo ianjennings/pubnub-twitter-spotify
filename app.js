@@ -1,11 +1,5 @@
-var dotenv = require('dotenv');
 var PUBNUB = require('pubnub');
-var colors = require('colors');
-var request = require('request');
-var util = require('util');
-// hide embedly key
-dotenv.load();
-var EMBEDLY_KEY = process.env.EMBEDLY_KEY;
+var mongo = require('mongodb').MongoClient;
 
 // http://stackoverflow.com/questions/4504853/how-do-i-extract-a-url-from-plain-text-using-jquery
 var findUrls = function(text) {
@@ -28,28 +22,57 @@ var findUrls = function(text) {
 
 }
 
-// initialize pubnub with special key
-var pubnub = PUBNUB.init({
-  subscribe_key: 'sub-c-78806dd4-42a6-11e4-aed8-02ee2ddab7fe'
-});
+mongo.connect('mongodb://127.0.0.1:27017/pubnub-listening', function(err, db) {
 
-// subscribe to twitter / spotify feed
-pubnub.subscribe({
-  channel: 'pubnub-twitter-spotify',
-  message: function(tweet) { 
+  var albums = db.collection('albums');
 
-    console.log(tweet)
+  // initialize pubnub with special key
+  var pubnub = PUBNUB.init({
+    subscribe_key: 'sub-c-78806dd4-42a6-11e4-aed8-02ee2ddab7fe'
+  });
 
-    request.get('http://api.embed.ly/1/extract?key=' + EMBEDLY_KEY + '&url=' + findUrls(tweet.text)[0] + '&maxwidth=640&format=json', function (error, response, body) {
+  var top10 = function() {
 
-      console.log(error);
+    albums
+      .find({})
+      .sort({plays: -1})
+      .limit(10)
+      .toArray(function(err, docs) {
 
-      console.log(tweet.text);
-      console.log('EMBEDLY RESPONSE!'.green);
-      var body = JSON.parse(body);
-      console.log(body)
+        for(var i = 0; i < docs.length; i++) {
+          console.log(i + ') [' + docs[i].plays + ' plays] ' + docs[i].link);
+        }
 
     });
 
-  }
+  };
+
+  // subscribe to twitter / spotify feed
+  pubnub.subscribe({
+    channel: 'pubnub-twitter-spotify',
+    message: function(tweet) { 
+
+      var link = findUrls(tweet.text)[0];
+
+      if(typeof link !== "undefined" && link) {
+
+        var dbobj = {
+          link: link,
+          plays: 1,
+          tweet: tweet
+        };
+
+        albums.update({link: link}, {$inc: {plays: 1}}, {upsert: true, w: 1}, function(err, docs) {
+          console.log(' ');
+          console.log('--------------------------------------------------');
+          console.log(' ');
+          console.log('Update: '.green + link);
+          top10();
+        });
+
+      }
+
+    }
+  });
+
 });
