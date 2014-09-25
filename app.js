@@ -79,8 +79,12 @@ mongo.connect('mongodb://127.0.0.1:27017/pubnub-listening', function(err, db) {
   });
 
   app.get('/', function (req, res) {
+    res.render('index');
+  });
+
+  app.get('/top', function(req, res) {
     top(function(docs) {
-      res.render('index', {docs: docs});
+      res.json(docs);
     });
   });
 
