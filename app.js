@@ -3,6 +3,8 @@ var mongo = require('mongodb').MongoClient;
 
 var express = require('express');
 var app = express();
+var config = require('./config');
+
 app.set('views', './views');
 app.set('view engine', 'jade');
 
@@ -27,7 +29,7 @@ var findUrls = function(text) {
 
 }
 
-mongo.connect('mongodb://127.0.0.1:27017/pubnub-listening', function(err, db) {
+mongo.connect(config.db, function(err, db) {
 
   var albums = db.collection('albums');
 
