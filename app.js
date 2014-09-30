@@ -43,7 +43,7 @@ mongo.connect(config.db, function(err, db) {
     var callback = callback || function(){};
 
     albums
-      .find({})
+      .find({$where: function () { return Date.now() - this._id.getTimestamp() < (24 * 60 * 60 * 1000)}})
       .sort({plays: -1})
       .limit(5)
       .toArray(function(err, docs) {
@@ -90,6 +90,6 @@ mongo.connect(config.db, function(err, db) {
     });
   });
 
-  app.listen(3000);
+  app.listen(config.port);
 
 });
