@@ -13,7 +13,7 @@
       text-align: center;
       font-family: 'Oxygen', sans-serif;
     }
-    h1,h2,h3 {
+    h1,h2,h3,h4,h5,img {
       margin: 10px 0px;
     }
     h1 {
@@ -80,6 +80,7 @@
               <div class="num">' + (i + 1) + '</div> \
               <h2>' + oembed.title + '</h2> \
               <h3>' + oembed.description + '</h3> \
+              <h4>' + data[i].plays + ' Tweets</h4> \
               <div class="embed">' + oembed.html + '</div> \
             </div> \
           ';
@@ -93,5 +94,6 @@
       });
       
     </script>
+    <a href="http://pubnub.com"><img src="https://brandfolder.com/pubnub/assets/xemvalf8" width="200px" alt="Powered By PubNub Color"></a>
   </body>
 </html>
