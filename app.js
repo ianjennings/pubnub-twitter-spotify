@@ -43,7 +43,7 @@ mongo.connect(config.db, function(err, db) {
     var callback = callback || function(){};
 
     albums
-      .find({$where: function () { return Date.now() - this._id.getTimestamp() < (24 * 60 * 60 * 1000)}})
+      .find({$where: function() { return Date.now() - this._id.getTimestamp() < (7 * 24 * 60 * 60 * 1000)}})
       .sort({plays: -1})
       .limit(5)
       .toArray(function(err, docs) {

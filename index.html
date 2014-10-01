@@ -7,6 +7,9 @@
   </head>
   <title>Popular Spotify Tracks Posted On Twitter</title>
   <style type="text/css">
+    body {
+      background-image: url('http://subtlepatterns.com/patterns/congruent_pentagon.png');
+    }
     * {
       margin: 0px;
       padding: 0px;
@@ -18,11 +21,11 @@
     }
     h1 {
       margin-top: 0px;
-      font-size: 42px;
+      font-size: 36px;
       font-weight: bold;
-      background-color: black;
-      padding: 20px;
-      color: white;
+      background-color: white;
+      padding: 30px;
+      color: #333;
       text-transform: uppercase;
     }
     h2 {
@@ -32,33 +35,42 @@
     h3 {
       font-size: 14px;
     }
+    .info {
+      text-align: left;
+    }
     .album {
-      border: 1px solid #efefef;
-      width: 600px;
+      opacity: .9;
+      width: 340px;
       margin-top: 20px;
       margin-bottom: 20px;
       margin-right: 20px;
+      padding-top: 20px;
       margin-left: 90px;
       position: relative;
       display: inline-block;
-      padding-bottom: 20px;
+      background-color: #fff;
+      border-top-right-radius: 5px;
+      border-bottom-left-radius: 5px;
+      border-bottom-right-radius: 5px;
     }
     .num {
       position: absolute;
-      left: -80px;
+      left: -60px;
       top: 0px;
-      background-color: black;
+      background-color: #333;
       color: white;
       display: block;
-      width: 80px;
-      height: 80px;
-      line-height: 80px;
+      width: 60px;
+      height: 60px;
+      line-height: 60px;
       font-weight: bold;
       font-size: 30px;
+      border-top-left-radius: 5px;
+      border-bottom-left-radius: 5px;
     }
   </style>
   <body>
-    <h1>Today's Most Tweeted Spotify Tracks</h1>
+    <h1>This Week's Most Tweeted Spotify Tracks</h1>
     <div id="output"></div>
     <script>
       var $output = $('#output');
@@ -78,10 +90,10 @@
           var $html = ' \
             <div class="album"> \
               <div class="num">' + (i + 1) + '</div> \
-              <h2>' + oembed.title + '</h2> \
-              <h3>' + oembed.description + '</h3> \
-              <h4>' + data[i].plays + ' Tweets</h4> \
               <div class="embed">' + oembed.html + '</div> \
+              <div class="info"> \
+                <h4>' + data[i].plays + ' Tweets</h4> \
+              </div> \
             </div> \
           ';
 
