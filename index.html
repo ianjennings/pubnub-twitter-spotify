@@ -65,20 +65,22 @@
       
       $.get('/top', function(data) {
       
+        console.log(data)
+
         var urls = [];
         for(var i = 0; i < data.length; i++) {
           urls.push(data[i].link);
         }
 
         var i = 0;
-        $.embedly.oembed(urls, {key: '5f535050d3f9484c94cd07ea3121299b'}).progress(function(data){
+        $.embedly.oembed(urls, {key: '5f535050d3f9484c94cd07ea3121299b'}).progress(function(oembed){
 
           var $html = ' \
             <div class="album"> \
               <div class="num">' + (i + 1) + '</div> \
-              <h2>' + data.title + '</h2> \
-              <h3>' + data.description + '</h3> \
-              <div class="embed">' + data.html + '</div> \
+              <h2>' + oembed.title + '</h2> \
+              <h3>' + oembed.description + '</h3> \
+              <div class="embed">' + oembed.html + '</div> \
             </div> \
           ';
 
