@@ -7,7 +7,7 @@ var config = {
   production: {
     url: 'http://memewarz.com',
     port: process.env.PORT,
-    db: 'mongodb://admin:BKfxkQk7@proximus.modulusmongo.net:27017/ba5nireJ'
+    db: 'mongodb://admin:BKfxkQk7@proximus.modulusmongo.net:27017/'
   }
 };
 
