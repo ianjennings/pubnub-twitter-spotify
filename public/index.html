@@ -110,7 +110,6 @@
       var i = 0;
       pubnub.subscribe({
         channel: 'pubnub-twitter-spotify',
-        backfill: true,
         message: function(tweet) { 
 
           var links = findUrls(tweet.text);
