@@ -57,12 +57,11 @@
       position: fixed;
       left: 0px;
       width: 100px;
-      height: 100px;
       z-index: 2;
       text-align: center;
       width: 100%;
       color: #fff;
-      font-size: 42px;
+      font-size: 24px;
       text-shadow: 0px 0px 10px #000;
       bottom: 0px;
       background-color: #111;
@@ -86,7 +85,9 @@
       var $tweet = $('#tweet');
       var $output = $('#output');
 
-      var handleTweets = function(tweets) {
+      var history_count = 100;
+
+      var handleTweets = function(tweets, is_history) {
 
         var links = [];
         for(var i = 0; i < tweets.length; i++) {
@@ -98,14 +99,12 @@
             links.push(link);
             
             var $html = $('\
-              <a class="album" href="' + link +'" data-link="' + link + '"><div class="tweet-show">' + tweets[i].text + '</div><div class="image"></div></a> \
+              <a class="album" href="http://twitter.com/' + tweets[i].user.screen_name + '/status/' + tweets[i].id_str + '" data-link="' + link + '" target="_blank"><div class="tweet-show">' + tweets[i].text + '</div><div class="image"></div></a> \
             ');
 
-            if($('.album').length) {
+            if(!is_history) {
               var randomel = Math.floor((Math.random()* $('.album').length )+1);
-              $('.album:nth-child(' + randomel + ')').addClass('animated rollOut').one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(e, el) {
-                $(this).remove();
-              }).before($html);
+              $('.album:nth-child(' + randomel + ')').after($html);
             } else {
               $('#output').append($html);
             }
@@ -116,16 +115,22 @@
 
         $.embedly.oembed(links, {key: '5f535050d3f9484c94cd07ea3121299b', batch: 10}).progress(function(oembed){
 
-          alert('calledback')
-
           if(oembed && typeof oembed !== "undefined") {
 
             if(oembed.thumbnail_width / oembed.thumbnail_height == 1) {
 
-              var $html = $('<img src="' + oembed.thumbnail_url + '" class="animated rollIn">');
-              var placeholder = $('.album[data-link="' + oembed.original_url + '"] .image');
+              var $html = $('<img src="' + oembed.thumbnail_url + '" class="animated flipInY">');
+              var placeholder = $('.album[data-link="' + oembed.original_url + '"]').first();
 
-              placeholder.html($html);
+              if(!is_history) {
+                placeholder.prev().addClass('animated flipOutY').one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(e, el) {
+                  $(this).remove();
+                  placeholder.find('.image').html($html);
+                });
+              } else {
+                placeholder.find('.image').html($html);
+              }
+
               i++;
                
             }
@@ -134,10 +139,7 @@
 
         });
 
-        // delete albums with index > x
-        $('.album:gt(200)').remove();
-        $('.album:eq(0)').addClass('over');
-        $('.album:gt(0)').removeClass('over');
+        $('.album:gt(' + history_count + ')').remove();
 
       };
 
@@ -147,20 +149,18 @@
 
       var findLink = function(tweet) {
         var links = tweet.entities.urls;
-        if(links) {
+        if(links.length > 0) {
           return links[(links.length - 1)].expanded_url; 
         } else {
           return false;
         }
       }
 
-      var history_count = 80;
-      var count = 0;
       pubnub.history({
         channel: 'pubnub-twitter-spotify',
         count: history_count,
         callback: function(m){
-          handleTweets(m[0]);
+          handleTweets(m[0], true);
         },
       });
 
@@ -168,7 +168,7 @@
       pubnub.subscribe({
         channel: 'pubnub-twitter-spotify',
         message: function(tweet) { 
-          handleTweets([tweet]);
+          handleTweets([tweet], false);
         }
       });
         
