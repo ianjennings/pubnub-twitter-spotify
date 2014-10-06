@@ -4,7 +4,7 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js" type="text/javascript"></script>
     <script src="http://cdn.embed.ly/jquery.embedly-3.1.1.min.js" type="text/javascript"></script>
     <link href='http://fonts.googleapis.com/css?family=Oxygen:400,700,300' rel='stylesheet' type='text/css'>
-    <link href='/css/animate.css' rel='stylesheet' type='text/css'>
+    <link href='http://cdn.jsdelivr.net/animatecss/3.2.0/animate.min.css' rel='stylesheet' type='text/css'>
   </head>
   <title>Popular Spotify Tracks Posted On Twitter</title>
   <style type="text/css">
@@ -41,9 +41,8 @@
       text-align: left;
     }
     .album {
+      opacity: .9;
       float: left;
-    }
-    .album {
       width: 10%;
     }
     .album img {
@@ -53,8 +52,8 @@
       width: 100%;
       height: 100%;
     }
-    #tweet {
-      display: block;
+    .tweet-show {
+      display: none;
       position: fixed;
       left: 0px;
       width: 100px;
@@ -67,8 +66,14 @@
       text-shadow: 0px 0px 10px #000;
       bottom: 0px;
       background-color: #111;
-      opacity: .9;
+      opacity: .5;
       padding: 20px 0px;
+    }
+    .album:hover {
+      opacity: 1;
+    }
+    .album:hover .tweet-show {
+      display: block;
     }
   </style>
   <body>
@@ -81,81 +86,92 @@
       var $tweet = $('#tweet');
       var $output = $('#output');
 
-      // http://stackoverflow.com/questions/4504853/how-do-i-extract-a-url-from-plain-text-using-jquery
-      var findUrls = function(text) {
-          
-          var source = (text || '').toString();
-          var urlArray = [];
-          var url;
-          var matchArray;
+      var handleTweets = function(tweets) {
 
-          // Regular expression to find FTP, HTTP(S) and email URLs.
-          var regexToken = /(((ftp|https?):\/\/)[\-\w@:%_\+.~#?,&\/\/=]+)|((mailto:)?[_.\w-]+@([\w][\w\-]+\.)+[a-zA-Z]{2,3})/g;
+        var links = [];
+        for(var i = 0; i < tweets.length; i++) {
 
-          // Iterate through any URLs in the text.
-          while( (matchArray = regexToken.exec( source )) !== null ) {
-            var token = matchArray[0];
-            urlArray.push( token );
+          var link = findLink(tweets[i]);
+
+          if(typeof link !== "undefined" && link) {
+            
+            links.push(link);
+            
+            var $html = $('\
+              <a class="album" href="' + link +'" data-link="' + link + '"><div class="tweet-show">' + tweets[i].text + '</div><div class="image"></div></a> \
+            ');
+
+            if($('.album').length) {
+              var randomel = Math.floor((Math.random()* $('.album').length )+1);
+              $('.album:nth-child(' + randomel + ')').addClass('animated rollOut').one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(e, el) {
+                $(this).remove();
+              }).before($html);
+            } else {
+              $('#output').append($html);
+            }
+
           }
 
-          return urlArray;
+        }
 
-      }
+        $.embedly.oembed(links, {key: '5f535050d3f9484c94cd07ea3121299b', batch: 10}).progress(function(oembed){
+
+          alert('calledback')
+
+          if(oembed && typeof oembed !== "undefined") {
+
+            if(oembed.thumbnail_width / oembed.thumbnail_height == 1) {
+
+              var $html = $('<img src="' + oembed.thumbnail_url + '" class="animated rollIn">');
+              var placeholder = $('.album[data-link="' + oembed.original_url + '"] .image');
+
+              placeholder.html($html);
+              i++;
+               
+            }
+
+          }
+
+        });
+
+        // delete albums with index > x
+        $('.album:gt(200)').remove();
+        $('.album:eq(0)').addClass('over');
+        $('.album:gt(0)').removeClass('over');
+
+      };
 
       var pubnub = PUBNUB.init({
         subscribe_key: 'sub-c-78806dd4-42a6-11e4-aed8-02ee2ddab7fe'
       });
 
+      var findLink = function(tweet) {
+        var links = tweet.entities.urls;
+        if(links) {
+          return links[(links.length - 1)].expanded_url; 
+        } else {
+          return false;
+        }
+      }
+
+      var history_count = 80;
+      var count = 0;
+      pubnub.history({
+        channel: 'pubnub-twitter-spotify',
+        count: history_count,
+        callback: function(m){
+          handleTweets(m[0]);
+        },
+      });
+
       // subscribe to twitter / spotify feed
-      var i = 0;
       pubnub.subscribe({
         channel: 'pubnub-twitter-spotify',
         message: function(tweet) { 
-
-          var links = findUrls(tweet.text);
-          var link = links[(links.length - 1)];
-
-          if(typeof link !== "undefined" && link) {
-
-            $.embedly.oembed(link, {key: '5f535050d3f9484c94cd07ea3121299b'}).progress(function(oembed){
-
-              if(oembed && typeof oembed !== "undefined") {
-
-                if(oembed.thumbnail_width / oembed.thumbnail_height == 1) {
-
-                  var $html = $('\
-                    <div class="album animated rollIn"> \
-                      <img src="' + oembed.thumbnail_url + '"> \
-                    </div> \
-                  ');
-
-                  $html.hover(function(){
-
-                    $('#tweet').html(tweet.text);
-
-                  });
-
-                  $output.prepend($html);
-
-                  i++;
-                   
-                }
-
-                // delete albums with index > x
-                $('.album:gt(200)').remove();
-                $('.album:eq(0)').addClass('over');
-                $('.album:gt(0)').removeClass('over');
-
-              }
-
-            });
-
-          }
-
+          handleTweets([tweet]);
         }
       });
         
-      
     </script>
   </body>
 </html>
